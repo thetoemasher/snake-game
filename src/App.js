@@ -1,32 +1,20 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import maps from './maps/maps'
 
 class App extends Component {
   constructor() {
-    super()
-    let map = []
-    for(let i = 0; i < 25; i++) {
-      let arr = []
-      for(let f = 0; f < 25; f++) {
-        // console.log('a')
-        if(i === 0 || i === 24 || f === 0 || f === 24) {
-          arr.push(1)
-        } else if(i === 12 && f === 12) {
-          arr.push(2)
-        } else {
-          arr.push(0)
-        }
-      }
-      map.push(arr)
-    }
-    
+    super()    
+    console.log(maps)
+    let {five} = maps
     this.state = {
-      map: map,
-      head: [12, 12],
+      map: five.map,
+      head: five.start,
       dot: null,
-      snake: [[12, 12]] ,
+      snake: [five.start] ,
       direction: null,
+      isMoving: false,
     }
   }
 
@@ -35,36 +23,31 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // let {direction} = this.state
-    // let {handleKeyPress} = this
     if(prevState.dot) {
-      if(this.state.dot[0] === 0 && this.state.dot[1] === 0) {
-        this.getDot()
+      let indexes = []
+      this.state.map.forEach(r => {
+        indexes.push(r.indexOf(0))
+      })
+      let total = indexes.reduce((a, b) => a + b, 0)
+      if(total > ~(this.state.map.length -3)) {
+        if(this.state.dot[0] === 0 && this.state.dot[1] === 0) {
+          this.getDot()
+        } 
+      }else {
+        alert("You did the thing!")
+        window.location.reload()
       }
     }
-    // if(this.state.direction) {
-    //   if(prevState.direction === this.state.direction) {
-    //     setTimeout(function() {
-    //       console.log(direction)
-    //       handleKeyPress({key: direction})
-    //     }, 1000)
-    //   } else if (prevState.direction !== this.state.direction) {
-    //     setTimeout(function() {
-    //       console.log(direction)
-    //       handleKeyPress({key: direction})
-    //     }, 1000)
-      // }
-    // }
   }
 
   getDot = () => {
     let dot = []
     let map = this.state.map.slice()
-    dot[0] = ~~(Math.random() * 24) + 1
-    dot[1] = ~~(Math.random() * 24) + 1
+    dot[0] = ~~(Math.random() * (map.length - 1)) + 1
+    dot[1] = ~~(Math.random() * (map.length - 1)) + 1
     while (this.state.map[dot[0]][dot[1]] === 1 || this.state.map[dot[0]][dot[1]] === 2){
-      dot[0] = ~~(Math.random() * 5) + 1
-      dot[1] = ~~(Math.random() * 5) + 1
+      dot[0] = ~~(Math.random() * (map.length - 1)) + 1
+      dot[1] = ~~(Math.random() * (map.length - 1)) + 1
     }
     map[dot[0]][dot[1]] = 3
     this.setState({map, dot})
@@ -95,12 +78,24 @@ class App extends Component {
         window.location.reload()
       }
       map[head[0]][head[1]] = 2
+      if(!this.state.isMoving) {
+        this.setState({isMoving: true})
+      } else if(this.state.moving && e.key !== this.state.direction) {
+        this.setState({isMoving: false})
+      }
       this.setState({head, map, dot, length, snake, direction: e.key})
     }
   }
+
+  handleSelect = (e) => {
+    let size = maps[e.target.value]
+    this.setState({map: size.map, head: size.start, snake: [size.start]})
+  }
+
   render() {
-    let {direction} = this.state
+    let {direction, isMoving} = this.state
     let {handleKeyPress} = this
+    
     let map = this.state.map.map((r, f) => {
       // console.log(r)
       let row = r.map((c, i) => {
@@ -119,13 +114,18 @@ class App extends Component {
         }
       })
       return (
-        <div style={{display: 'flex', flexDirection: 'row', width: '100%'}} key={f}>
+        <div style={{display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'center'}} key={f}>
           {row}
         </div>
       )
     })
     return (
-      <div onKeyDown={this.handleKeyPress} style={{backgroundColor: 'purple'}} tabIndex="0">
+      <div onKeyDown={this.handleKeyPress} style={{backgroundColor: 'purple', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center'}} tabIndex="0">
+      <select onChange={this.handleSelect}>
+        <option value='five'>5X5</option>
+        <option value='eleven'>11X11</option>
+        <option value='twenty_five'>25X25</option>
+      </select>
         {map}
       </div>
     );
