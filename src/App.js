@@ -14,7 +14,7 @@ class App extends Component {
       dot: null,
       snake: [five.start] ,
       direction: null,
-      isMoving: false,
+      isMoving: null,
     }
   }
 
@@ -54,12 +54,12 @@ class App extends Component {
   }
 
   handleKeyPress = (e) => {
-    if(/[wasd]/.test(e.key)){
+    if(/[wasd]/.test(e)){
       let head = this.state.head.slice()
-      if(e.key === 'w') head[0]--
-      if(e.key === 's') head[0]++
-      if(e.key === 'a') head[1]--
-      if(e.key === 'd') head[1]++
+      if(e === 'w') head[0]--
+      if(e === 's') head[0]++
+      if(e === 'a') head[1]--
+      if(e === 'd') head[1]++
       let dot = this.state.dot.slice()
       let length = this.state.length
       let snake = this.state.snake.slice()
@@ -78,23 +78,47 @@ class App extends Component {
         window.location.reload()
       }
       map[head[0]][head[1]] = 2
-      if(!this.state.isMoving) {
-        this.setState({isMoving: true})
-      } else if(this.state.moving && e.key !== this.state.direction) {
-        this.setState({isMoving: false})
-      }
-      this.setState({head, map, dot, length, snake, direction: e.key})
+      this.setState({head, map, dot, length, snake})
+    }
+  }
+
+  autoMove = (handle, dir) => {
+    // console.log('automove', dir)
+    this.setState({isMoving: setInterval(() => {
+      console.log(dir)
+      handle(dir)
+    }, 500)})
+  }
+  keyDown = (e) => {
+    let {handleKeyPress} = this
+    clearInterval(this.state.isMoving)
+    console.log(e.key)
+    if(/[wasd]/.test(e.key)){
+      let a = e.key
+      this.setState({direction: e.key, 
+        isMoving: setInterval(() => {
+          console.log(a)
+        handleKeyPress(a)
+      }, 500)
+    })
     }
   }
 
   handleSelect = (e) => {
+    let {dot} = this.state
     let size = maps[e.target.value]
+    let map = size.map.slice()
+    map[dot[0]][dot[1]] = 3
     this.setState({map: size.map, head: size.start, snake: [size.start]})
   }
 
   render() {
     let {direction, isMoving} = this.state
-    let {handleKeyPress} = this
+    let {autoMove, handleKeyPress} = this
+    // console.log('direction', direction)
+    // if(!isMoving) {
+    //   autoMove(handleKeyPress, direction)
+    // }
     
     let map = this.state.map.map((r, f) => {
       // console.log(r)
@@ -120,8 +144,8 @@ class App extends Component {
       )
     })
     return (
-      <div onKeyDown={this.handleKeyPress} style={{backgroundColor: 'purple', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center'}} tabIndex="0">
-      <select onChange={this.handleSelect}>
+      <div onKeyDown={this.keyDown} style={{backgroundColor: 'purple', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center'}} tabIndex="0">
+      <select onChange={this.handleSelect} style={{width: '100px'}}>
         <option value='five'>5X5</option>
         <option value='eleven'>11X11</option>
         <option value='twenty_five'>25X25</option>
