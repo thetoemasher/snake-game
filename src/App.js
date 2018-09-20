@@ -6,7 +6,7 @@ import maps from './maps/maps'
 class App extends Component {
   constructor() {
     super()    
-    console.log(maps)
+    // console.log(maps)
     let {five} = maps
     this.state = {
       map: five.map,
@@ -15,6 +15,8 @@ class App extends Component {
       snake: [five.start] ,
       direction: null,
       isMoving: null,
+      dotCount: 0,
+      speed: 500,
     }
   }
 
@@ -64,8 +66,18 @@ class App extends Component {
       let length = this.state.length
       let snake = this.state.snake.slice()
       let map = this.state.map.slice()
+      let {dotCount, speed} = this.state
       if(head[0] === dot[0] && head[1] === dot[1]) {
         dot = [0, 0]
+        dotCount++
+        if(speed > 0) {
+          speed -= 5
+        }
+        // if(speed <= 50) {
+        //   speed -= 5
+        // } else if(dotCount && !(dotCount % 5)) {
+        //   speed = speed - 50
+        // }
         length++
         snake.unshift(head)
       } else {
@@ -78,29 +90,26 @@ class App extends Component {
         window.location.reload()
       }
       map[head[0]][head[1]] = 2
-      this.setState({head, map, dot, length, snake})
+      this.setState({head, map, dot, length, snake, dotCount, speed})
     }
   }
 
-  autoMove = (handle, dir) => {
-    // console.log('automove', dir)
-    this.setState({isMoving: setInterval(() => {
-      console.log(dir)
-      handle(dir)
-    }, 500)})
-  }
   keyDown = (e) => {
-    let {handleKeyPress} = this
-    clearInterval(this.state.isMoving)
     console.log(e.key)
-    if(/[wasd]/.test(e.key)){
-      let a = e.key
-      this.setState({direction: e.key, 
-        isMoving: setInterval(() => {
-          console.log(a)
+    let {speed} = this.state
+    let {handleKeyPress} = this
+    if(e.key !== this.state.direction) {
+      clearInterval(this.state.isMoving)
+      if(/[wasd]/.test(e.key)){
+        let a = e.key
         handleKeyPress(a)
-      }, 500)
-    })
+        this.setState({direction: e.key, 
+          isMoving: setInterval(() => {
+          handleKeyPress(a)
+        }, speed),
+        speed
+        })
+      }
     }
   }
 
@@ -115,13 +124,10 @@ class App extends Component {
   render() {
     let {direction, isMoving} = this.state
     let {autoMove, handleKeyPress} = this
-    // console.log('direction', direction)
-    // if(!isMoving) {
-    //   autoMove(handleKeyPress, direction)
-    // }
+    // console.log(this.state.speed)
+    // console.log(this.state.dotCount)
     
     let map = this.state.map.map((r, f) => {
-      // console.log(r)
       let row = r.map((c, i) => {
         if(c === 0) {
           return(
