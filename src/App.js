@@ -73,11 +73,6 @@ class App extends Component {
         if(speed > 0) {
           speed -= 5
         }
-        // if(speed <= 50) {
-        //   speed -= 5
-        // } else if(dotCount && !(dotCount % 5)) {
-        //   speed = speed - 50
-        // }
         length++
         snake.unshift(head)
       } else {
@@ -95,17 +90,25 @@ class App extends Component {
   }
 
   keyDown = (e) => {
-    console.log(e.key)
     let {speed} = this.state
     let {handleKeyPress} = this
-    if(e.key !== this.state.direction) {
+    let dir = e.key
+    if(dir === 'ArrowLeft') dir = 'a'
+    if(dir === 'ArrowUp') dir = 'w'
+    if(dir === 'ArrowRight') dir = 'd'
+    if(dir === 'ArrowDown') dir = 's'
+    let timeout = 100
+    if(speed < 100) timeout = speed
+
+    if(dir !== this.state.direction) {
       clearInterval(this.state.isMoving)
-      if(/[wasd]/.test(e.key)){
-        let a = e.key
-        handleKeyPress(a)
-        this.setState({direction: e.key, 
+      if(/[wasd]/.test(dir)){
+        setTimeout(() => {
+          handleKeyPress(dir)
+        }, timeout)
+        this.setState({direction: dir, 
           isMoving: setInterval(() => {
-          handleKeyPress(a)
+          handleKeyPress(dir)
         }, speed),
         speed
         })
@@ -138,9 +141,9 @@ class App extends Component {
             <div className='cube' style={{backgroundColor: 'white'}} key={i}></div>
           )
         } else if(c === 3) {
-            return(
-              <div className='cube' style={{backgroundColor: 'red'}} key={i}></div>
-            )
+          return(
+            <div className='cube' style={{backgroundColor: 'red'}} key={i}></div>
+          )
         }
       })
       return (
@@ -150,14 +153,16 @@ class App extends Component {
       )
     })
     return (
-      <div onKeyDown={this.keyDown} style={{backgroundColor: 'purple', height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center'}} tabIndex="0">
+    <div style={{backgroundColor: 'purple', height: '100vh', display: 'flex', flexDirection: 'column'}}>
       <select onChange={this.handleSelect} style={{width: '100px'}}>
         <option value='five'>5X5</option>
         <option value='eleven'>11X11</option>
         <option value='twenty_five'>25X25</option>
       </select>
+      <div onKeyDown={this.keyDown} style={{outline: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'center'}} tabIndex="0">
         {map}
       </div>
+    </div>
     );
   }
 }
