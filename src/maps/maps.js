@@ -31,7 +31,7 @@ module.exports = {
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             
         ],
-        start: [6, 2],
+        start: [6, 6],
         styles: {
             
         }
